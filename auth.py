@@ -6,6 +6,10 @@ from sqlite_db import SQLiteDatabase
 from fastapi import Depends
 security = HTTPBearer()
 
+def get_user_repo():
+    db = SQLiteDatabase()
+    db._create_tables()
+    return UserRepository(db)
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security), 
@@ -19,9 +23,5 @@ def get_current_user(
 
     return user
 
-def get_user_repo():
-    db = SQLiteDatabase()
-    db._create_tables()
-    return UserRepository(db)
 
     

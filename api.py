@@ -44,6 +44,13 @@ class TaskPatch(BaseModel):
 
 app = FastAPI()
 
+def get_service():
+    db = SQLiteDatabase()
+    db._create_tables()
+    task_repo = TaskRepository(db)
+    user_repo = UserRepository(db)
+    query_repo = TaskQueryService(db)
+    return CrudService(task_repo, user_repo, query_repo)
 
 #API例外ハンドラー
 @app.exception_handler(TaskNotFoundError)
@@ -117,15 +124,4 @@ def patch_task(task_id: int, task: TaskPatch,
         patched = service.patch(task_id, task.description, task.status)
         return TaskResponse(**patched.to_dict())
 
-def get_service():
-    db = SQLiteDatabase()
-    db._create_tables()
-    task_repo = TaskRepository(db)
-    user_repo = UserRepository(db)
-    query_repo = TaskQueryService(db)
-    return CrudService(task_repo, user_repo, query_repo)
 
-def get_user_repo():
-    db = SQLiteDatabase()
-    db._create_tables()
-    return UserRepository(db)
