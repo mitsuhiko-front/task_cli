@@ -13,7 +13,8 @@ from typing import Optional
 from fastapi.responses import JSONResponse
 from fastapi import Header
 from fastapi.security import HTTPBearer
-from fastapi.security import HTTPAuthorizationCredentials
+from auth import get_current_user
+
 
 security = HTTPBearer()
 
@@ -43,17 +44,7 @@ class TaskPatch(BaseModel):
 
 app = FastAPI()
 
-def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security), 
-    user_repo: UserRepository = Depends(get_user_repo)
-):
-    user_id = int(credentials.credentials)
-    user = user_repo.find_by_id(user_id)
 
-    if user is None:
-        raise HTTPException(status_code=401)
-
-    return user
 #API例外ハンドラー
 @app.exception_handler(TaskNotFoundError)
 async def task_not_found_handler(request, exc):
