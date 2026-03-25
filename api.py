@@ -42,29 +42,10 @@ class TaskPatch(BaseModel):
     status: Optional[Literal["to-do", "in-progress", "done"]] = None
 
 app = FastAPI()
-def authenticate_user(authorization: str):
-    parts = authorization.split()
-
-    if len(parts) != 2:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
-    if parts[0] != "Bearer":
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
-    try:
-        user_id = int(parts[1])
-    except ValueError:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
-    user = user_repo.find_user_by_id(user_id)
-
-    if user is None:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
-    return user
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    credentials: HTTPAuthorizationCredentials = Depends(security), 
+    user_repo: UserRepository = Depends(get_user_repo)
 ):
     user_id = int(credentials.credentials)
     user = user_repo.find_by_id(user_id)
@@ -100,48 +81,60 @@ async def invalid_value_handler(request, exc):
     )
 #--------------------------------------
 @app.get("/tasks", response_model=list[TaskResponse])
-def list_tasks():
+def list_tasks(service: CrudService = Depends(get_service)):
     tasks = service.list_tasks()
     return [ TaskResponse(**t) for t in tasks]   
  
 @app.get("/tasks/{task_id}", response_model=TaskResponse)
-def get_task_by_id(task_id: int):
+def get_task_by_id(task_id: int, 
+                   service: CrudService = Depends(get_service)):
     task = service.get_task_by_id(task_id)
     return TaskResponse(**task) 
 
 @app.get("/tasks-with-user", response_model=list[TaskWithUserResponse])
-def list_tasks_with_user():
+def list_tasks_with_user(service: CrudService = Depends(get_service)):
     tasks = service.list_tasks_with_user()
     return [TaskWithUserResponse(**t) for t in tasks]
 
 @app.get("/tasks-with-user/{task_id}", response_model=TaskWithUserResponse)
-def get_task_with_user_by_id(task_id: int):
+def get_task_with_user_by_id(task_id: int, 
+                             service: CrudService = Depends(get_service)):
     task = service.get_task_with_user_by_id(task_id)
     return TaskWithUserResponse(**task) 
 #--------------------------------------
 @app.post("/tasks")
-def create_task(task: TaskCreate, user=Depends(get_current_user)):
+def create_task(task: TaskCreate, 
+                user=Depends(get_current_user), 
+                service: CrudService = Depends(get_service)):
     return service.add(task.description, user["id"])
 
 @app.delete("/tasks/{task_id}", status_code=204)
-def delete_task(task_id: int):
+def delete_task(task_id: int, 
+                service: CrudService = Depends(get_service)):
         service.delete(task_id)
     
 @app.put("/tasks/{task_id}", response_model=TaskResponse)
-def put_task(task_id: int, task: TaskPut):
-    #task_id == 
-    #task == TaskPut(description="", status="")
+def put_task(task_id: int, 
+             task: TaskPut, 
+             service: CrudService = Depends(get_service)):
     updated = service.update(task_id, task.description, task.status)
     return TaskResponse(**updated.to_dict())
 
 @app.patch("/tasks/{task_id}", response_model=TaskResponse)
-def patch_task(task_id: int, task: TaskPatch):
+def patch_task(task_id: int, task: TaskPatch, 
+               service: CrudService = Depends(get_service)):
         patched = service.patch(task_id, task.description, task.status)
         return TaskResponse(**patched.to_dict())
 
-db = SQLiteDatabase()
-db._create_tables()
-task_repo = TaskRepository(db)
-user_repo = UserRepository(db)
-query_repo = TaskQueryService(db)
-service = CrudService(task_repo, user_repo, query_repo)
+def get_service():
+    db = SQLiteDatabase()
+    db._create_tables()
+    task_repo = TaskRepository(db)
+    user_repo = UserRepository(db)
+    query_repo = TaskQueryService(db)
+    return CrudService(task_repo, user_repo, query_repo)
+
+def get_user_repo():
+    db = SQLiteDatabase()
+    db._create_tables()
+    return UserRepository(db)
