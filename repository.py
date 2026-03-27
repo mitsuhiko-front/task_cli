@@ -125,3 +125,38 @@ class UserRepository:
             "createdAt": row["createdAt"],
             "updatedAt": row["updatedAt"]
         }
+    def find_by_username(self, username: str):
+        cursor = self.conn.cursor()
+
+        cursor.execute(
+            "SELECT * FROM users WHERE username = ?", 
+            (username,)
+        )
+
+        row = cursor.fetchone()
+
+        if row is None:
+            return None
+        
+        return {
+            "id":row["id"],
+            "username":row["username"],
+            "password":row["password"],
+            "createdAt": row["createdAt"],
+            "updatedAt": row["updatedAt"]
+        }
+    def insert(self, username: str, password: str):
+        cursor = self.conn.cursor()
+        now = datetime.now().isoformat()
+
+        cursor.execute(
+            "INSERT INTO users (username, password, createdAt, updatedAt)" \
+            "VALUES (?, ?, ?, ?)"
+            , (username, password, now, now) 
+        )
+
+        self.conn.commit()
+
+        return self.find_by_username(username)
+
+        

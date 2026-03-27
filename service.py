@@ -11,7 +11,7 @@ class CrudService():
 
     def add(self, description: str, user_id):
         task = TaskProperty(
-            id=None,  # DBが決める
+            id=None,
             description=description,
             status="to-do",
             user_id=user_id,
