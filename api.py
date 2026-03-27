@@ -14,6 +14,8 @@ from fastapi.responses import JSONResponse
 from fastapi import Header
 from fastapi.security import HTTPBearer
 from auth import get_current_user
+from auth import create_access_token
+
 
 
 security = HTTPBearer()
@@ -77,6 +79,12 @@ async def invalid_value_handler(request, exc):
         status_code=401,
         content={"detail": "Header not found"}
     )
+#--------------------------------------
+#ログインルーター
+@app.post("/login")
+def login(user_id: int):
+    token = create_access_token(user_id)
+    return {"access_token": token}
 #--------------------------------------
 @app.get("/tasks", response_model=list[TaskResponse])
 def list_tasks(service: CrudService = Depends(get_service)):
