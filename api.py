@@ -13,8 +13,11 @@ from typing import Optional
 from fastapi.responses import JSONResponse
 from fastapi import Header
 from fastapi.security import HTTPBearer
+from security import verify_password
+from auth import create_access_token
 from auth import get_current_user
 from auth import create_access_token
+from security import hash_password
 
 
 
@@ -26,6 +29,7 @@ class TaskResponse(BaseModel):
     status: str
     createdAt: str
     updatedAt: str
+    deletedAt: str
 
 class TaskWithUserResponse(BaseModel):
     id: int
@@ -54,6 +58,11 @@ def get_service():
     query_repo = TaskQueryService(db)
     return CrudService(task_repo, user_repo, query_repo)
 
+def get_user_repo():
+    db = SQLiteDatabase()
+    db._create_tables()
+    return UserRepository(db)
+
 #API例外ハンドラー
 @app.exception_handler(TaskNotFoundError)
 async def task_not_found_handler(request, exc):
@@ -80,12 +89,28 @@ async def invalid_value_handler(request, exc):
         content={"detail": "Header not found"}
     )
 #--------------------------------------
+@app.post("/register")
+def register(username: str, password: str, 
+             user_repo: UserRepository = Depends(get_user_repo)):
+    hashed = hash_password(password)
+
+    user_repo.insert(username, hashed)
+
+    return {"msg": "ok"}
+#--------------------------------------
 #ログインルーター
 @app.post("/login")
-def login(user_id: int):
-    token = create_access_token(user_id)
+def login(username: str, password: str, 
+          user_repo: UserRepository = Depends(get_user_repo)):
+    user = user_repo.find_by_username(username)
+    if user is None:
+        raise HTTPException(status_code=401)
+    if not verify_password(password, user["password"]):
+        raise HTTPException(status_code=401)
+    token = create_access_token(user["id"])
     return {"access_token": token}
 #--------------------------------------
+
 @app.get("/tasks", response_model=list[TaskResponse])
 def list_tasks(service: CrudService = Depends(get_service)):
     tasks = service.list_tasks()
@@ -112,8 +137,8 @@ def get_task_with_user_by_id(task_id: int,
 def create_task(task: TaskCreate, 
                 user=Depends(get_current_user), 
                 service: CrudService = Depends(get_service)):
-    return service.add(task.description, user["id"])
-
+    created = service.add(task.description, user["id"])
+    return created
 @app.delete("/tasks/{task_id}", status_code=204)
 def delete_task(task_id: int, 
                 service: CrudService = Depends(get_service)):
