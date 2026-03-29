@@ -1,11 +1,14 @@
 from fastapi.security import HTTPAuthorizationCredentials
 from jose import jwt
+from jose import JWTError
 from datetime import datetime, timedelta
 from fastapi import HTTPException
 from fastapi.security import HTTPBearer
 from repository import UserRepository
 from sqlite_db import SQLiteDatabase
 from fastapi import Depends
+
+#自動でBearer付ける
 security = HTTPBearer()
 
 SECRET_KEY = "secret"
@@ -21,6 +24,7 @@ def create_access_token(user_id: int):
 
 def decode_token(token: str):
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    print(payload)
     return int(payload["sub"])
 
 def get_user_repo():
@@ -34,8 +38,8 @@ def get_current_user(
 ):
     try:
         user_id = decode_token(credentials.credentials)
-    except:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    except JWTError:
+        raise HTTPException(status_code=401)
     user = user_repo.find_by_id(user_id)
 
     if user is None:

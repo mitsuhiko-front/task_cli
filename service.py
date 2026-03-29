@@ -1,7 +1,6 @@
 
 from model import TaskProperty
-from exceptions import TaskNotFoundError
-from exceptions import UserNotFoundError
+from exceptions import TaskNotFoundError, UserNotFoundError, AutorizationError
 
 class CrudService():
     def __init__(self, task_repo, user_repo, query_repo):
@@ -23,22 +22,31 @@ class CrudService():
         return self.task_repo.insert(task)
       
         
-    def delete(self, task_id: int):
+    def delete(self, task_id: int, user_id: int):
         task = self.get_task_or_404(task_id)
+
+        if task.user_id != user_id:
+            raise AutorizationError()
 
         if task.deletedAt is not None:
             raise ValueError("削除済みです")
         self.task_repo.delete(task_id)
 
-    def restore(self, task_id):
+    def restore(self, task_id: int, user_id: int):
         task = self.get_task_or_404(task_id)
 
+        if task.user_id != user_id:
+            raise AutorizationError()
+        
         if task.deletedAt is None:
             raise ValueError("未削除です")
         self.task_repo.restore(task_id)
 
-    def update(self, task_id: int, new_description: str, new_status: str):
+    def update(self, task_id: int, new_description: str, new_status: str, user_id: int):
         task = self.get_task_or_404(task_id)
+
+        if task.user_id != user_id:
+            raise AutorizationError()
         task.replace(new_description, new_status)
         
         updated = self.task_repo.update(task)
@@ -47,26 +55,34 @@ class CrudService():
             raise TaskNotFoundError("タスクがありません")
         return task
        
-    def patch(self, task_id: int, description: str | None = None, status: str | None = None):
+    def patch(self, task_id: int, user_id: int, description: str | None = None, status: str | None = None):
         task = self.get_task_or_404(task_id)
+
+        if task.user_id != user_id:
+            raise AutorizationError()
         changed = task._patch(description, status)
 
         if changed:     
             self.task_repo.update(task)
         return task
             
-    def list_tasks(self):
-        return self.task_repo.find_all()
+    def list_tasks(self, user_id: int):
+        tasks = self.task_repo.find_all(user_id)
+        print(tasks)
+        return self.task_repo.find_all(user_id)
     
-    def list_tasks_with_user(self):
-        return self.query_repo.find_all_with_user()
+    def list_tasks_with_user(self, user_id: int):
+        return self.query_repo.find_all_with_user(user_id)
     
-    def get_task_by_id(self, task_id: int):
+    def get_task_by_id(self, task_id: int, user_id: int):
         task = self.get_task_or_404(task_id)
+        if task.user_id != user_id:
+            raise AutorizationError()
         return task
-    def get_task_with_user_by_id(self, task_id: int):
+    def get_task_with_user_by_id(self, task_id: int, user_id: int):
         task = self.query_repo.find_task_with_user_by_id(task_id)
-
+        if task.user_id != user_id:
+            raise AutorizationError()
         if task is None:
             raise TaskNotFoundError()
 
@@ -117,6 +133,4 @@ class CrudService():
    
 
 
-class TaskNotFoundError(Exception):
-    pass
 

@@ -67,14 +67,14 @@ class TaskRepository:
         row = cursor.fetchone()
         return self._row_to_task(row)
 
-    def find_all(self):
+    def find_all(self, user_id: int):
         cursor = self.conn.cursor()
 
         cursor.execute("""
         SELECT * FROM tasks
-        WHERE deletedAt IS NULL
+        WHERE user_id = ? AND deletedAt IS NULL
         ORDER BY id
-        """)
+        """,(user_id,))
 
         rows = cursor.fetchall()
         return [self._row_to_task(row) for row in rows]
@@ -97,7 +97,7 @@ class TaskRepository:
             id=row["id"],
             description=row["description"],
             status=row["status"],
-            user_id=row["user_id"],
+            user_id=row["user_id"], 
             createdAt=row["createdAt"],
             updatedAt=row["updatedAt"],
             deletedAt=row["deletedAt"]
@@ -120,7 +120,7 @@ class UserRepository:
             return None
 
         return {
-            "id": row["id"],
+            "id": int(row["id"]),
             "username": row["username"],
             "createdAt": row["createdAt"],
             "updatedAt": row["updatedAt"]

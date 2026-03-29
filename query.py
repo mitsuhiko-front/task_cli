@@ -25,15 +25,15 @@ class TaskQueryService:
             "username": row["username"]
         }
 
-    def find_all_with_user(self):
+    def find_all_with_user(self, user_id):
         cursor = self.conn.cursor()
 
         cursor.execute("""
         SELECT tasks.id, tasks.description, tasks.status, users.username
         FROM tasks
         JOIN users ON users.id = tasks.user_id
-        WHERE tasks.deletedAt IS NULL
-        """)
+        WHERE tasks.user_id = ? AND tasks.deletedAt IS NULL
+        """, (user_id))
 
         rows = cursor.fetchall()
 
