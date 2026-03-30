@@ -176,6 +176,12 @@ def patch_task(task_id: int, task: TaskPatch,
                user = Depends(get_user_repo), 
                service: CrudService = Depends(get_service)):
         patched = service.patch(task_id, user["id"], task.description, task.status)
-        return TaskResponse(**patched.to_dict())
+        return TaskResponse(
+            id=patched.id,
+            description=patched.description,
+            status=patched.status,
+            createdAt=patched.createdAt,
+            updatedAt=patched.updatedAt
+        ) 
 
 

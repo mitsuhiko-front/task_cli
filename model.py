@@ -41,15 +41,16 @@ class TaskProperty:
         "createdAt": self.createdAt,
         "updatedAt": self.updatedAt,
     } 
-    def _patch(self, description: str | None = None, status: str | None = None): 
+    def patch(self, description: str | None = None, status: str | None = None): 
         changed = False
+        
         if description is not None:
-            result_desc = self.update_description(description)
-            changed = changed or result_desc
-        if status is not None:          
-            result_sts = self.change_status(status)
-            changed = changed or result_sts
+            changed = changed or self.update_description(description)
+        if status is not None:           
+            changed = changed or self.change_status(status)
+
         return changed
+    
     def check_description(self, description):
         if not description or not description.strip():
             raise ValueError

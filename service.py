@@ -60,12 +60,18 @@ class CrudService():
 
         if task.user_id != user_id:
             raise AutorizationError()
-        changed = task._patch(description, status)
+        changed = task.patch(description, status)
 
-        if changed:     
-            self.task_repo.update(task)
-        return task
-            
+        if not changed:     
+            return task
+        updated = self.task_repo.update(task)
+
+        if not updated:
+            raise TaskNotFoundError()
+        
+        return self.task_repo.find_by_id(task.id)
+    
+         
     def list_tasks(self, user_id: int):
         tasks = self.task_repo.find_all(user_id)
         print(tasks)

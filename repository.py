@@ -51,7 +51,7 @@ class TaskRepository:
         UPDATE tasks
         SET description = ?, status = ?, updatedAt = ?
         WHERE id = ? AND deletedAt IS NULL
-        """, (task.description, task.status, now, task.id))
+        """, (task.description, task.status, task.id))
 
         self.conn.commit()
         return cursor.rowcount > 0
