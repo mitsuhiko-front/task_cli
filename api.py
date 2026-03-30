@@ -1,7 +1,7 @@
 print("🔥🔥🔥 このapi.pyが起動してる")
 from fastapi import FastAPI
 from service import CrudService
-from exceptions import TaskNotFoundError, UserNotFoundError, HeaderNotFoundError, AutorizationError
+from exceptions import TaskNotFoundError, UserNotFoundError, HeaderNotFoundError, AlreadyDeletedError, NotDeletedError, AutorizationError
 from repository import TaskRepository, UserRepository
 from query import TaskQueryService
 from sqlite_db import SQLiteDatabase
@@ -68,31 +68,37 @@ def get_user_repo():
 async def task_not_found_handler(request, exc):
     return JSONResponse(
         status_code=404,
-        content={"detail": "Task not found"}
+        content={"message": "Task not found"}
     )
 @app.exception_handler(UserNotFoundError)
 async def user_not_found_handler(request, exc):
     return JSONResponse(
         status_code=404,
-        content={"detail": str(exc)}
+        content={"message": str(exc)}
         )
-@app.exception_handler(ValueError)
-async def invalid_value_handler(request, exc):
-    return JSONResponse(
-        status_code=400,
-        content={"detail": "invalid_value"}
-    )
 @app.exception_handler(HeaderNotFoundError)
-async def invalid_value_handler(request, exc):
+async def header_not_found_handler(request, exc):
     return JSONResponse(
         status_code=401,
-        content={"detail": "Header not found"}
+        content={"message": "Header not found"}
+    )
+@app.exception_handler(AlreadyDeletedError)
+def handle_deleted(request, exc):
+    return JSONResponse(
+        status_code=409,
+        content={"message": "Task already deleted"}
+    )
+@app.exception_handler(NotDeletedError)
+def handle_not_deleted(request, exc):
+    return JSONResponse(
+        status_code=409,
+        content={"message": "Task is not deleted"}
     )
 @app.exception_handler(AutorizationError)
 async def Authorization_handler(request, exc):
     return JSONResponse(
         status_code=403, 
-        content={"detail": "Authoraization Error"}
+        content={"message": "Not allowed"}
     )
 #--------------------------------------
 @app.post("/register")
@@ -151,7 +157,7 @@ def get_task_with_user_by_id(task_id: int,
     task = service.get_task_with_user_by_id(task_id, user["id"])
     return TaskWithUserResponse(**task) 
 #--------------------------------------
-@app.post("/tasks")
+@app.post("/tasks", status_code=201)
 def create_task(task: TaskCreate, 
                 user=Depends(get_current_user), 
                 service: CrudService = Depends(get_service)):
@@ -165,7 +171,7 @@ def delete_task(task_id: int,
     service.delete(task_id, user["id"])
     return {"msg": "削除しました"}
 
-@app.post("/tasks/{task_id}/restore", status_code=204)
+@app.post("/tasks/{task_id}/restore", status_code=201)
 def restore_task(task_id: int, 
                  user = Depends(get_current_user),
                  service: CrudService = Depends(get_service)):
