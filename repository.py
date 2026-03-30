@@ -7,7 +7,6 @@ class TaskRepository:
 
     def insert(self, task: TaskProperty):
         cursor = self.conn.cursor()
-        now = datetime.now().isoformat()
 
         cursor.execute("""
         INSERT INTO tasks (description, status, user_id, createdAt, updatedAt)
@@ -19,7 +18,6 @@ class TaskRepository:
 
     def delete(self, task_id: int) -> bool:
         cursor = self.conn.cursor()
-        now = datetime.now().isoformat()
 
         cursor.execute("""
         UPDATE tasks
@@ -32,20 +30,19 @@ class TaskRepository:
 
     def restore(self, task_id: int) -> bool:
         cursor = self.conn.cursor()
-        now = datetime.now().isoformat()
+        
 
         cursor.execute("""
         UPDATE tasks
         SET deletedAt = NULL, updatedAt = CURRENT_TIMESTAMP
         WHERE id = ? AND deletedAt IS NOT NULL
-        """, (now, task_id))
+        """, (task_id,))
 
         self.conn.commit()
         return cursor.rowcount > 0
 
     def update(self, task: TaskProperty):
         cursor = self.conn.cursor()
-        now = datetime.now().isoformat()
 
         cursor.execute("""
         UPDATE tasks
@@ -147,12 +144,11 @@ class UserRepository:
         }
     def insert(self, username: str, password: str):
         cursor = self.conn.cursor()
-        now = datetime.now().isoformat()
 
         cursor.execute(
             "INSERT INTO users (username, password, createdAt, updatedAt)" \
-            "VALUES (?, ?, ?, ?)"
-            , (username, password, now, now) 
+            "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+            , (username, password) 
         )
 
         self.conn.commit()

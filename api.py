@@ -140,7 +140,7 @@ def get_task_by_id(task_id: int,
 
 @app.get("/tasks-with-user", response_model=list[TaskWithUserResponse])
 def list_tasks_with_user(service: CrudService = Depends(get_service),
-                         user = Depends(get_user_repo)):
+                         user = Depends(get_current_user)):
     tasks = service.list_tasks_with_user(user["id"])
     return [TaskWithUserResponse(**t) for t in tasks]
 
@@ -159,10 +159,11 @@ def create_task(task: TaskCreate,
     return created
 @app.delete("/tasks/{task_id}", status_code=204)
 def delete_task(task_id: int, 
-                user = Depends(get_user_repo),
+                user = Depends(get_current_user),
                 service: CrudService = Depends(get_service)):
-        service.delete(task_id, user["id"])
-    
+    service.delete(task_id, user["id"])
+
+
 @app.put("/tasks/{task_id}", response_model=TaskResponse)
 def put_task(task_id: int, 
              task: TaskPut, 
@@ -173,7 +174,7 @@ def put_task(task_id: int,
 
 @app.patch("/tasks/{task_id}", response_model=TaskResponse)
 def patch_task(task_id: int, task: TaskPatch, 
-               user = Depends(get_user_repo), 
+               user = Depends(get_current_user), 
                service: CrudService = Depends(get_service)):
         patched = service.patch(task_id, user["id"], task.description, task.status)
         return TaskResponse(
@@ -182,6 +183,6 @@ def patch_task(task_id: int, task: TaskPatch,
             status=patched.status,
             createdAt=patched.createdAt,
             updatedAt=patched.updatedAt
-        ) 
+        )
 
 
