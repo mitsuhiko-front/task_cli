@@ -33,7 +33,7 @@ class TaskQueryService:
         FROM tasks
         JOIN users ON users.id = tasks.user_id
         WHERE tasks.user_id = ? AND tasks.deletedAt IS NULL
-        """, (user_id))
+        """, (user_id,))
 
         rows = cursor.fetchall()
 

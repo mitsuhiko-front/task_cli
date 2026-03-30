@@ -31,18 +31,24 @@ class CrudService():
 
         if task.deletedAt is not None:
             raise ValueError("削除済みです")
-        self.task_repo.delete(task_id)
+        return self.task_repo.delete(task_id)
 
     def restore(self, task_id: int, user_id: int):
-        task = self.get_task_or_404(task_id)
-
+        task = self.task_repo.find_by_deleted_id(task_id)
+        if task is None:
+            raise TaskNotFoundError()
+        
         if task.user_id != user_id:
             raise AutorizationError()
         
         if task.deletedAt is None:
             raise ValueError("未削除です")
-        self.task_repo.restore(task_id)
-
+        
+        restored = self.task_repo.restore(task_id)
+        if not restored:
+            raise TaskNotFoundError()
+        return True
+        
     def update(self, task_id: int, new_description: str, new_status: str, user_id: int):
         task = self.get_task_or_404(task_id)
 
@@ -87,9 +93,11 @@ class CrudService():
             raise AutorizationError()
         return task
     def get_task_with_user_by_id(self, task_id: int, user_id: int):
-        task = self.query_repo.find_task_with_user_by_id(task_id)
-        if task.user_id != user_id:
+        task_find = self.get_task_or_404(task_id)
+        if task_find.user_id != user_id:
             raise AutorizationError()
+        task = self.query_repo.find_task_with_user_by_id(task_id)
+        
         if task is None:
             raise TaskNotFoundError()
 
