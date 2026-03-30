@@ -21,7 +21,7 @@ class TaskRepository:
 
         cursor.execute("""
         UPDATE tasks
-        SET deletedAt = ?, updatedAt = CURRENT_TIMESTAMP
+        SET deletedAt = CURRENT_TIMESTAMP, updatedAt = CURRENT_TIMESTAMP
         WHERE id = ? AND deletedAt IS NULL
         """, (task_id,))
 
@@ -63,7 +63,18 @@ class TaskRepository:
 
         row = cursor.fetchone()
         return self._row_to_task(row)
+    
+    def find_by_deleted_id(self, task_id: int):
+        cursor = self.conn.cursor()
 
+        cursor.execute("""
+        SELECT * FROM tasks
+        WHERE id = ? AND deletedAt IS NOT NULL
+        """, (task_id,))
+
+        row = cursor.fetchone()
+        return self._row_to_task(row)
+    
     def find_all(self, user_id: int):
         cursor = self.conn.cursor()
 

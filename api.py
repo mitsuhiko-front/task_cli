@@ -157,12 +157,20 @@ def create_task(task: TaskCreate,
                 service: CrudService = Depends(get_service)):
     created = service.add(task.description, user["id"])
     return created
+
 @app.delete("/tasks/{task_id}", status_code=204)
 def delete_task(task_id: int, 
                 user = Depends(get_current_user),
                 service: CrudService = Depends(get_service)):
     service.delete(task_id, user["id"])
+    return {"msg": "削除しました"}
 
+@app.post("/tasks/{task_id}/restore", status_code=204)
+def restore_task(task_id: int, 
+                 user = Depends(get_current_user),
+                 service: CrudService = Depends(get_service)):
+    service.restore(task_id, user["id"])
+    return {"msg": "復元しました"}
 
 @app.put("/tasks/{task_id}", response_model=TaskResponse)
 def put_task(task_id: int, 
