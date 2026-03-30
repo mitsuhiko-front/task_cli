@@ -11,11 +11,11 @@ class TaskRepository:
 
         cursor.execute("""
         INSERT INTO tasks (description, status, user_id, createdAt, updatedAt)
-        VALUES (?, ?, ?, ?, ?)
-        """, (task.description, task.status, task.user_id, now, now))
+        VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        """, (task.description, task.status, task.user_id))
 
         self.conn.commit()
-        return self.find_by_id(cursor.lastrowid)
+        return cursor.lastrowid
 
     def delete(self, task_id: int) -> bool:
         cursor = self.conn.cursor()
@@ -23,7 +23,7 @@ class TaskRepository:
 
         cursor.execute("""
         UPDATE tasks
-        SET deletedAt = ?, updatedAt = ?
+        SET deletedAt = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE id = ? AND deletedAt IS NULL
         """, (now, now, task_id))
 
@@ -36,7 +36,7 @@ class TaskRepository:
 
         cursor.execute("""
         UPDATE tasks
-        SET deletedAt = NULL, updatedAt = ?
+        SET deletedAt = NULL, updatedAt = CURRENT_TIMESTAMP
         WHERE id = ? AND deletedAt IS NOT NULL
         """, (now, task_id))
 
@@ -49,7 +49,7 @@ class TaskRepository:
 
         cursor.execute("""
         UPDATE tasks
-        SET description = ?, status = ?, updatedAt = ?
+        SET description = ?, status = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE id = ? AND deletedAt IS NULL
         """, (task.description, task.status, task.id))
 
