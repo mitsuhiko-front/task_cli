@@ -1,6 +1,6 @@
 
 from model import TaskProperty
-from exceptions import TaskNotFoundError, UserNotFoundError, AutorizationError
+from exceptions import TaskNotFoundError, UserNotFoundError, AutorizationError, AlreadyDeletedError, NotDeletedError
 
 class CrudService():
     def __init__(self, task_repo, user_repo, query_repo):
@@ -30,7 +30,7 @@ class CrudService():
             raise AutorizationError()
 
         if task.deletedAt is not None:
-            raise ValueError("削除済みです")
+            raise AlreadyDeletedError("削除済みです")
         return self.task_repo.delete(task_id)
 
     def restore(self, task_id: int, user_id: int):
@@ -42,7 +42,7 @@ class CrudService():
             raise AutorizationError()
         
         if task.deletedAt is None:
-            raise ValueError("未削除です")
+            raise NotDeletedError("未削除です")
         
         restored = self.task_repo.restore(task_id)
         if not restored:
