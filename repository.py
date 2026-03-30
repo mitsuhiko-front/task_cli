@@ -23,7 +23,7 @@ class TaskRepository:
         UPDATE tasks
         SET deletedAt = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE id = ? AND deletedAt IS NULL
-        """, (now, now, task_id))
+        """, (task_id,))
 
         self.conn.commit()
         return cursor.rowcount > 0
