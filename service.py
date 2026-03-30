@@ -19,8 +19,9 @@ class CrudService():
             deletedAt=None
         )
     
-        return self.task_repo.insert(task)
-      
+        new_id = self.task_repo.insert(task)
+
+        return self.task_repo.find_by_id(new_id)
         
     def delete(self, task_id: int, user_id: int):
         task = self.get_task_or_404(task_id)
