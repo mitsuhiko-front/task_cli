@@ -80,8 +80,7 @@ class CrudService():
     
          
     def list_tasks(self, user_id: int):
-        tasks = self.task_repo.find_all(user_id)
-        print(tasks)
+        
         return self.task_repo.find_all(user_id)
     
     def list_tasks_with_user(self, user_id: int):
