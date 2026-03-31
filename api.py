@@ -31,12 +31,26 @@ class TaskResponse(BaseModel):
     createdAt: datetime
     updatedAt: datetime
 
+    @classmethod
+    def from_domain(cls, task):
+        return cls(
+            id=task.id,
+            description=task.description,
+            status=task.status,
+            createdAt=task.createdAt,
+            updatedAt=task.updatedAt
+        )
+    
 class TaskWithUserResponse(BaseModel):
     id: int
     description: str
     status: str
     username: str
 
+    @classmethod
+    def from_query(cls, task):
+        return cls(**task)
+    
 class TaskCreate(BaseModel):
     description: str
 
@@ -127,35 +141,28 @@ def login(username: str, password: str,
 def list_tasks(service: CrudService = Depends(get_service),
                user=Depends(get_current_user)):
     tasks = service.list_tasks(user["id"])
-    for t in tasks:
-        print(t.to_dict())
-    return [TaskResponse(
-        id=t.id,
-        description=t.description,
-        status=t.status,
-        createdAt=t.createdAt,
-        updatedAt=t.updatedAt
-    ) for t in tasks]   
+    
+    return [TaskResponse.from_domain(t) for t in tasks]   
  
 @app.get("/tasks/{task_id}", response_model=TaskResponse)
 def get_task_by_id(task_id: int, 
                    user=Depends(get_current_user),
                    service: CrudService = Depends(get_service)):
     task = service.get_task_by_id(task_id, user["id"])
-    return TaskResponse(**task.to_dict()) 
+    return TaskResponse.from_domain(task) 
 
 @app.get("/tasks-with-user", response_model=list[TaskWithUserResponse])
 def list_tasks_with_user(service: CrudService = Depends(get_service),
                          user = Depends(get_current_user)):
     tasks = service.list_tasks_with_user(user["id"])
-    return [TaskWithUserResponse(**t) for t in tasks]
+    return [TaskWithUserResponse.from_query(t) for t in tasks]
 
 @app.get("/tasks-with-user/{task_id}", response_model=TaskWithUserResponse)
 def get_task_with_user_by_id(task_id: int, 
                              user=Depends(get_current_user),
                              service: CrudService = Depends(get_service)):
     task = service.get_task_with_user_by_id(task_id, user["id"])
-    return TaskWithUserResponse(**task) 
+    return TaskWithUserResponse.from_query(task) 
 #--------------------------------------
 @app.post("/tasks", status_code=201)
 def create_task(task: TaskCreate, 
@@ -171,7 +178,7 @@ def delete_task(task_id: int,
     service.delete(task_id, user["id"])
     return {"msg": "削除しました"}
 
-@app.post("/tasks/{task_id}/restore", status_code=201)
+@app.post("/tasks/{task_id}/restore", status_code=200)
 def restore_task(task_id: int, 
                  user = Depends(get_current_user),
                  service: CrudService = Depends(get_service)):
@@ -184,19 +191,13 @@ def put_task(task_id: int,
              user = Depends(get_current_user),
              service: CrudService = Depends(get_service)):
     updated = service.update(task_id, task.description, task.status, user["id"])
-    return TaskResponse(**updated.to_dict())
+    return TaskResponse.from_domain(updated)
 
 @app.patch("/tasks/{task_id}", response_model=TaskResponse)
 def patch_task(task_id: int, task: TaskPatch, 
                user = Depends(get_current_user), 
                service: CrudService = Depends(get_service)):
         patched = service.patch(task_id, user["id"], task.description, task.status)
-        return TaskResponse(
-            id=patched.id,
-            description=patched.description,
-            status=patched.status,
-            createdAt=patched.createdAt,
-            updatedAt=patched.updatedAt
-        )
+        return TaskResponse.from_domain(patched)
 
 
