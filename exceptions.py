@@ -15,3 +15,5 @@ class NotDeletedError(Exception):
 
 class AutorizationError(Exception):
     pass
+class AuthenticationError(Exception):
+    pass
