@@ -2,13 +2,21 @@ import sys
 from service import CrudService
 from repository import TaskRepository, UserRepository 
 from query import TaskQueryService
+from sqlite_db import SQLiteDatabase
 from exceptions import TaskNotFoundError
 
 def get_service():
-    task_repo = TaskRepository()
-    user_repo = UserRepository()
-    query_repo = TaskQueryService()
+    db = SQLiteDatabase()
+    db._create_tables()
+    task_repo = TaskRepository(db)
+    user_repo = UserRepository(db)
+    query_repo = TaskQueryService(db)
     return CrudService(task_repo, user_repo, query_repo)
+
+
+def print_task(task):
+    print(f"[{task.id}] {task.description} ({task.status})")
+
 
 def main():
     if len(sys.argv) < 2:
@@ -67,7 +75,7 @@ def cmd_update(service, args):
     except TaskNotFoundError:
         print("見つかりません")
     
-def cmd_list(service):
+def cmd_list(service, args):
     tasks = service.list_tasks()
     print(tasks)
 
