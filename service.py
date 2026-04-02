@@ -1,6 +1,9 @@
 
 from model import TaskProperty
-from exceptions import TaskNotFoundError, UserNotFoundError, AutorizationError, AlreadyDeletedError, NotDeletedError
+from exceptions import TaskNotFoundError, UserNotFoundError, AutorizationError, AlreadyDeletedError, NotDeletedError, AuthenticationError
+from security import verify_password, hash_password
+from auth import create_access_token
+
 
 class CrudService():
     def __init__(self, task_repo, user_repo, query_repo):
@@ -112,7 +115,22 @@ class CrudService():
         if task is None:
             raise TaskNotFoundError("")
         return task
-#----------------------------------------------------    
+#----------------------------------------------------   
+    def register(self, username, password):
+        hashed = hash_password(password)
+
+        self.user_repo.insert(username, hashed)
+
+    def login(self, username, password):
+        user = self.user_repo.find_by_username(username)
+
+        if not user:
+            raise AuthenticationError
+        
+        if not verify_password(password, user["password"]):
+            raise AuthenticationError
+        return create_access_token(user["id"])
+    
     def list_sts(self, status):
         tasks = self.repo.load_tasks()
         if not tasks:

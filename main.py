@@ -4,6 +4,7 @@ from repository import TaskRepository, UserRepository
 from query import TaskQueryService
 from sqlite_db import SQLiteDatabase
 from exceptions import TaskNotFoundError
+from auth import decode_token
 
 def get_service():
     db = SQLiteDatabase()
@@ -13,6 +14,9 @@ def get_service():
     query_repo = TaskQueryService(db)
     return CrudService(task_repo, user_repo, query_repo)
 
+def get_user_id():
+    token = input("token: ")
+    return decode_token(token)
 
 def print_task(task):
     print(f"[{task.id}] {task.description} ({task.status})")
@@ -27,6 +31,8 @@ def main():
     args = sys.argv[2:]
 
     commands = {
+        "register":cmd_register,
+        "login":cmd_login,
         "add": cmd_add,
         "delete": cmd_delete,
         "update": cmd_update,
@@ -38,6 +44,23 @@ def main():
         return
 
     commands[command](service, args)
+
+def cmd_register(service, args):
+    username = input("username: ")
+    password = input("password: ")
+
+    try:
+        service.register(username, password)
+        print("ユーザー登録しました")
+    except Exception:
+        print("登録に失敗しました")
+
+def cmd_login(service, args):
+    username = input("username: ")
+    password = input("password: ")
+
+    token = service.login(username, password)
+    print(f"token: {token}")
 
 def cmd_add(service, args):    
     if len(args) < 3:
@@ -76,8 +99,10 @@ def cmd_update(service, args):
         print("見つかりません")
     
 def cmd_list(service, args):
-    tasks = service.list_tasks()
-    print(tasks)
+    user_id = get_user_id()
+    tasks = service.list_tasks(user_id)
+    for t in tasks:
+        print_task(t)
 
 def cmd_restore(service, args):
     if len(sys.argv) < 3:
