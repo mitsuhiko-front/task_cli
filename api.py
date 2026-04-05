@@ -164,6 +164,7 @@ def get_task_with_user_by_id(task_id: int,
                              service: CrudService = Depends(get_service)):
     task = service.get_task_with_user_by_id(task_id, user["id"])
     return TaskWithUserResponse.from_query(task) 
+
 #--------------------------------------
 @app.post("/tasks", status_code=201)
 def create_task(task: TaskCreate, 
