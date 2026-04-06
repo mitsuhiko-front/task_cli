@@ -5,6 +5,7 @@ from exceptions import TaskNotFoundError, UserNotFoundError, HeaderNotFoundError
 from repository import TaskRepository, UserRepository
 from query import TaskQueryService
 from sqlite_db import SQLiteDatabase
+from postgre_db import get_db
 from datetime import datetime
 from pydantic import BaseModel
 from fastapi import HTTPException
@@ -67,19 +68,18 @@ app = FastAPI()
 
 @app.on_event("startup")
 def startup():
-    db = SQLiteDatabase()
+    db = get_db()
     db._create_tables()
-    
+
 def get_service():
-    db = SQLiteDatabase()
+    db = get_db()
     task_repo = TaskRepository(db)
     user_repo = UserRepository(db)
     query_repo = TaskQueryService(db)
     return CrudService(task_repo, user_repo, query_repo)
 
 def get_user_repo():
-    db = SQLiteDatabase()
-    db._create_tables()
+    db = get_db()
     return UserRepository(db)
 
 #API例外ハンドラー
