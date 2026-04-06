@@ -65,9 +65,13 @@ class TaskPatch(BaseModel):
 
 app = FastAPI()
 
-def get_service():
+@app.on_event("startup")
+def startup():
     db = SQLiteDatabase()
     db._create_tables()
+    
+def get_service():
+    db = SQLiteDatabase()
     task_repo = TaskRepository(db)
     user_repo = UserRepository(db)
     query_repo = TaskQueryService(db)
