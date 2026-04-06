@@ -1,6 +1,6 @@
 print("🔥🔥🔥 このapi.pyが起動してる")
 from fastapi import FastAPI
-from service import CrudService
+from service.service import CrudService
 from exceptions import TaskNotFoundError, UserNotFoundError, HeaderNotFoundError, AlreadyDeletedError, NotDeletedError, AutorizationError
 from src.repository.user_repository import UserRepository
 from src.repository.task_repository import TaskRepository

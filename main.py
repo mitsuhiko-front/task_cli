@@ -1,8 +1,8 @@
 import sys
-from service import CrudService
+from src.service.service import CrudService
 from repository import TaskRepository, UserRepository 
 from query import TaskQueryService
-from sqlite_db import SQLiteDatabase
+from src.database.sqlite_db import SQLiteDatabase
 from exceptions import TaskNotFoundError
 from auth import decode_token
 
