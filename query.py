@@ -10,7 +10,7 @@ class TaskQueryService:
         SELECT tasks.id, tasks.description, tasks.status, users.username
         FROM tasks
         JOIN users ON users.id = tasks.user_id
-        WHERE tasks.id = ? AND tasks.deletedAt IS NULL
+        WHERE tasks.id = %s AND tasks.deletedAt IS NULL
         """, (task_id,))
 
         row = cursor.fetchone()
@@ -32,7 +32,7 @@ class TaskQueryService:
         SELECT tasks.id, tasks.description, tasks.status, users.username
         FROM tasks
         JOIN users ON users.id = tasks.user_id
-        WHERE tasks.user_id = ? AND tasks.deletedAt IS NULL
+        WHERE tasks.user_id = %s AND tasks.deletedAt IS NULL
         """, (user_id,))
 
         rows = cursor.fetchall()

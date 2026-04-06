@@ -70,7 +70,7 @@ app = FastAPI()
 def startup():
     db = get_db()
     db._create_tables()
-
+    
 def get_service():
     db = get_db()
     task_repo = TaskRepository(db)
@@ -83,50 +83,50 @@ def get_user_repo():
     return UserRepository(db)
 
 #API例外ハンドラー
-@app.exception_handler(TaskNotFoundError)
-async def task_not_found_handler(request, exc):
-    return JSONResponse(
-        status_code=404,
-        content={"message": "Task not found"}
-    )
-@app.exception_handler(UserNotFoundError)
-async def user_not_found_handler(request, exc):
-    return JSONResponse(
-        status_code=404,
-        content={"message": str(exc)}
+#@app.exception_handler(TaskNotFoundError)
+    async def task_not_found_handler(request, exc):
+        return JSONResponse(
+            status_code=404,
+            content={"message": "Task not found"}
         )
-@app.exception_handler(HeaderNotFoundError)
-async def header_not_found_handler(request, exc):
-    return JSONResponse(
-        status_code=401,
-        content={"message": "Header not found"}
-    )
-@app.exception_handler(AlreadyDeletedError)
-def handle_deleted(request, exc):
-    return JSONResponse(
-        status_code=409,
-        content={"message": "Task already deleted"}
-    )
-@app.exception_handler(NotDeletedError)
-def handle_not_deleted(request, exc):
-    return JSONResponse(
-        status_code=409,
-        content={"message": "Task is not deleted"}
-    )
-@app.exception_handler(AutorizationError)
-async def Authorization_handler(request, exc):
-    return JSONResponse(
-        status_code=403, 
-        content={"message": "Not allowed"}
-    )
-#--------------------------------------
+    @app.exception_handler(UserNotFoundError)
+    async def user_not_found_handler(request, exc):
+        return JSONResponse(
+            status_code=404,
+            content={"message": str(exc)}
+            )
+    @app.exception_handler(HeaderNotFoundError)
+    async def header_not_found_handler(request, exc):
+        return JSONResponse(
+            status_code=401,
+            content={"message": "Header not found"}
+        )
+    @app.exception_handler(AlreadyDeletedError)
+    def handle_deleted(request, exc):
+        return JSONResponse(
+            status_code=409,
+            content={"message": "Task already deleted"}
+        )
+    @app.exception_handler(NotDeletedError)
+    def handle_not_deleted(request, exc):
+        return JSONResponse(
+            status_code=409,
+            content={"message": "Task is not deleted"}
+        )
+    @app.exception_handler(AutorizationError)
+    async def Authorization_handler(request, exc):
+        return JSONResponse(
+            status_code=403, 
+            content={"message": "Not allowed"}
+        )
+    #--------------------------------------
 @app.post("/register")
 def register(username: str, password: str, 
-             user_repo: UserRepository = Depends(get_user_repo)):
+            user_repo: UserRepository = Depends(get_user_repo)):
     hashed = hash_password(password)
 
     user_repo.insert(username, hashed)
-
+    print("🔥 REGISTER CALLED")
     return {"msg": "ok"}
 #--------------------------------------
 #ログインルーター
