@@ -8,7 +8,7 @@ class TaskRepository:
         cursor = self.conn.cursor()
 
         cursor.execute("""
-        INSERT INTO tasks (description, status, user_id, createdAt, updatedAt)
+        INSERT INTO tasks (description, status, user_id, created_at, updated_at)
         VALUES (%s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         RETURNING id
         """, (task.description, task.status, task.user_id))
@@ -24,8 +24,8 @@ class TaskRepository:
 
         cursor.execute("""
         UPDATE tasks
-        SET deletedAt = CURRENT_TIMESTAMP, updatedAt = CURRENT_TIMESTAMP
-        WHERE id = %s AND deletedAt IS NULL
+        SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+        WHERE id = %s AND deleted_at IS NULL
         RETURNING id
         """, (task_id,))
 
@@ -41,8 +41,8 @@ class TaskRepository:
 
         cursor.execute("""
         UPDATE tasks
-        SET deletedAt = NULL, updatedAt = CURRENT_TIMESTAMP
-        WHERE id = %s AND deletedAt IS NOT NULL
+        SET deleted_at = NULL, updated_at = CURRENT_TIMESTAMP
+        WHERE id = %s AND deleted_at IS NOT NULL
         RETURNING id
         """, (task_id,))
 
@@ -58,8 +58,8 @@ class TaskRepository:
 
         cursor.execute("""
         UPDATE tasks
-        SET description = %s, status = %s, updatedAt = CURRENT_TIMESTAMP
-        WHERE id = %s AND deletedAt IS NULL
+        SET description = %s, status = %s, updated_at = CURRENT_TIMESTAMP
+        WHERE id = %s AND deleted_at IS NULL
         RETURNING id
         """, (task.description, task.status, task.id))
 
@@ -74,7 +74,7 @@ class TaskRepository:
 
         cursor.execute("""
         SELECT * FROM tasks
-        WHERE id = %s AND deletedAt IS NULL
+        WHERE id = %s AND deleted_at IS NULL
         """, (task_id,))
 
         row = cursor.fetchone()
@@ -85,7 +85,7 @@ class TaskRepository:
 
         cursor.execute("""
         SELECT * FROM tasks
-        WHERE id = %s AND deletedAt IS NOT NULL
+        WHERE id = %s AND deleted_at IS NOT NULL
         """, (task_id,))
 
         row = cursor.fetchone()
@@ -96,7 +96,7 @@ class TaskRepository:
 
         cursor.execute("""
         SELECT * FROM tasks
-        WHERE user_id = %s AND deletedAt IS NULL
+        WHERE user_id = %s AND deleted_at IS NULL
         ORDER BY id
         """,(user_id,))
 
@@ -108,7 +108,7 @@ class TaskRepository:
 
         cursor.execute("""
         SELECT 1 FROM tasks
-        WHERE id = %s AND deletedAt IS NULL
+        WHERE id = %s AND deleted_at IS NULL
         """, (task_id,))
 
         return cursor.fetchone() is not None
@@ -122,7 +122,7 @@ class TaskRepository:
             description=row["description"],
             status=row["status"],
             user_id=row["user_id"], 
-            createdAt=row["createdat"],
-            updatedAt=row["updatedat"],
-            deletedAt=row["deletedat"]
+            created_at=row["createdat"],
+            updated_at=row["updatedat"],
+            deleted_at=row["deletedat"]
         )

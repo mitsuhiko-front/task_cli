@@ -30,8 +30,8 @@ class TaskResponse(BaseModel):
     id: int
     description: str
     status: str
-    createdAt: datetime
-    updatedAt: datetime
+    created_at: datetime
+    updated_at: datetime
 
     @classmethod
     def from_domain(cls, task):
@@ -39,8 +39,8 @@ class TaskResponse(BaseModel):
             id=task.id,
             description=task.description,
             status=task.status,
-            createdAt=task.createdAt,
-            updatedAt=task.updatedAt
+            created_at=task.created_at,
+            updated_at=task.updated_at
         )
     
 class TaskWithUserResponse(BaseModel):
