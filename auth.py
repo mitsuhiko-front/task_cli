@@ -4,8 +4,8 @@ from jose import JWTError
 from datetime import datetime, timedelta
 from fastapi import HTTPException
 from fastapi.security import HTTPBearer
-from repository import UserRepository
-from sqlite_db import SQLiteDatabase
+from src.repository.user_repository import UserRepository
+from src.database.postgre_db import get_db
 from fastapi import Depends
 
 #自動でBearer付ける
@@ -27,7 +27,7 @@ def decode_token(token: str):
     return int(payload["sub"])
 
 def get_user_repo():
-    db = SQLiteDatabase()
+    db = get_db()
     db._create_tables()
     return UserRepository(db)
 

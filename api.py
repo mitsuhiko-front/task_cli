@@ -2,10 +2,10 @@ print("🔥🔥🔥 このapi.pyが起動してる")
 from fastapi import FastAPI
 from service import CrudService
 from exceptions import TaskNotFoundError, UserNotFoundError, HeaderNotFoundError, AlreadyDeletedError, NotDeletedError, AutorizationError
-from repository import TaskRepository, UserRepository
+from src.repository.user_repository import UserRepository
+from src.repository.task_repository import TaskRepository
 from query import TaskQueryService
-from sqlite_db import SQLiteDatabase
-from postgre_db import get_db
+from src.database.postgre_db import get_db
 from datetime import datetime
 from pydantic import BaseModel
 from fastapi import HTTPException
@@ -69,6 +69,7 @@ app = FastAPI()
 @app.on_event("startup")
 def startup():
     db = get_db()
+    print("🔥 DB TYPE:", type(db))
     db._create_tables()
     
 def get_service():

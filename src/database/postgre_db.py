@@ -1,6 +1,8 @@
 import os
 import psycopg2
-from sqlite_db import SQLiteDatabase
+from psycopg2.extras import RealDictCursor
+from src.database.sqlite_db import SQLiteDatabase
+
 
 def get_db():
     database_url = os.getenv("DATABASE_URL")
@@ -12,8 +14,11 @@ def get_db():
 
 class PostgreSQLDatabase:
     def __init__(self, database_url: str):
-        self.conn = psycopg2.connect(database_url, sslmode="require")
-
+        self.conn = psycopg2.connect(
+    database_url,
+    sslmode="require",
+    cursor_factory=RealDictCursor
+)
     def _create_tables(self):
         cursor = self.conn.cursor()
 
@@ -22,8 +27,8 @@ class PostgreSQLDatabase:
                 id SERIAL PRIMARY KEY,
                 username TEXT NOT NULL,
                 password TEXT NOT NULL,
-                createdAt TEXT NOT NULL,
-                updatedAt TEXT NOT NULL
+                createdAt TIMESTAMP,
+                updatedAt TIMESTAMP
             )
         """)
 
@@ -33,9 +38,9 @@ class PostgreSQLDatabase:
                 description TEXT NOT NULL,
                 status TEXT NOT NULL,
                 user_id INTEGER NOT NULL,
-                createdAt TEXT NOT NULL,
-                updatedAt TEXT NOT NULL,
-                deletedAt TEXT,
+                createdAt TIMESTAMP,
+                updatedAt TIMESTAMP,
+                deletedAt TIMESTAMP,
                 FOREIGN KEY(user_id) REFERENCES users(id)
             )
         """)
