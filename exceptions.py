@@ -13,7 +13,7 @@ class AlreadyDeletedError(Exception):
 class NotDeletedError(Exception):
     pass
 
-class AutorizationError(Exception):
+class AuthorizationError(Exception):
     pass
 class AuthenticationError(Exception):
     pass

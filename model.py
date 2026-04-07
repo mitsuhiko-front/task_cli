@@ -1,17 +1,17 @@
 from datetime import datetime
 class TaskProperty:
     
-    def __init__(self, id: int, description: str, status: str, user_id: str, createdAt: str, updatedAt: str, deletedAt):
+    def __init__(self, id: int, description: str, status: str, user_id: str, created_at: str, updated_at: str, deleted_at):
         self.id = id
         self.description = self.check_description(description)
         self.status = status
         self.user_id = user_id
-        self.createdAt = createdAt
-        self.updatedAt = (
-            updatedAt if updatedAt is not None
+        self.created_at = created_at
+        self.updated_at = (
+            updated_at if updated_at is not None
             else datetime.now().isoformat()
             )
-        self.deletedAt = deletedAt
+        self.deleted_at = deleted_at
     def update_description(self, new_description: str):
         desc = self.check_description(new_description)
         changed = self.description != desc
@@ -38,8 +38,8 @@ class TaskProperty:
         "id": self.id,
         "description": self.description,
         "status": self.status,
-        "createdAt": self.createdAt,
-        "updatedAt": self.updatedAt,
+        "created_at": self.created_at,
+        "updated_at": self.updated_at,
     } 
     def patch(self, description: str | None = None, status: str | None = None): 
         changed = False

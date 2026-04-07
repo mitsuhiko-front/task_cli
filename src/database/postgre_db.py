@@ -21,7 +21,7 @@ class PostgreSQLDatabase:
         return self.conn.cursor(cursor_factory=RealDictCursor)
     def _create_tables(self):
         cursor = self.conn.cursor()
-
+        
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,

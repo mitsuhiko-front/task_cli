@@ -9,8 +9,8 @@ class JsonRepository:
                     d["id"],
                     d["description"],
                     d["status"],
-                    d["createdAt"],
-                    d["updatedAt"]
+                    d["created_at"],
+                    d["updated_at"]
                 )
             for d in data
         ]

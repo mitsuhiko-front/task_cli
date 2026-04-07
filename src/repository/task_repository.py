@@ -1,11 +1,12 @@
 from model import TaskProperty
+from psycopg2.extras import RealDictCursor
 
 class TaskRepository:
     def __init__(self, db):
-        self.conn = db.conn
+        self.db = db
 
     def insert(self, task: TaskProperty):
-        cursor = self.conn.cursor()
+        cursor = self.db.cursor()
 
         cursor.execute("""
         INSERT INTO tasks (description, status, user_id, created_at, updated_at)
@@ -15,12 +16,12 @@ class TaskRepository:
 
         row = cursor.fetchone()
         new_id = row["id"]
-        self.conn.commit()
+        self.db.conn.commit()
         cursor.close()
         return new_id
 
     def delete(self, task_id: int) -> bool:
-        cursor = self.conn.cursor()
+        cursor = self.db.cursor()
 
         cursor.execute("""
         UPDATE tasks
@@ -31,12 +32,12 @@ class TaskRepository:
 
         deleted = cursor.fetchone()
 
-        self.conn.commit()
+        self.db.conn.commit()
         cursor.close()
         return deleted is not None
 
     def restore(self, task_id: int) -> bool:
-        cursor = self.conn.cursor()
+        cursor = self.db.cursor()
         
 
         cursor.execute("""
@@ -48,13 +49,13 @@ class TaskRepository:
 
         restored = cursor.fetchone()
 
-        self.conn.commit()
+        self.db.conn.commit()
         cursor.close()
 
         return restored is not None
 
     def update(self, task: TaskProperty):
-        cursor = self.conn.cursor()
+        cursor = self.db.cursor()
 
         cursor.execute("""
         UPDATE tasks
@@ -65,12 +66,12 @@ class TaskRepository:
 
         updated = cursor.fetchone()
 
-        self.conn.commit()
+        self.db.conn.commit()
         cursor.close()
         return updated is not None
 
     def find_by_id(self, task_id: int):
-        cursor = self.conn.cursor()
+        cursor = self.db.cursor()
 
         cursor.execute("""
         SELECT * FROM tasks
@@ -81,7 +82,7 @@ class TaskRepository:
         return self._row_to_task(row)
     
     def find_by_deleted_id(self, task_id: int):
-        cursor = self.conn.cursor()
+        cursor = self.db.cursor()
 
         cursor.execute("""
         SELECT * FROM tasks
@@ -92,8 +93,7 @@ class TaskRepository:
         return self._row_to_task(row)
     
     def find_all(self, user_id: int):
-        cursor = self.conn.cursor()
-
+        cursor = self.db.cursor()
         cursor.execute("""
         SELECT * FROM tasks
         WHERE user_id = %s AND deleted_at IS NULL
@@ -103,9 +103,25 @@ class TaskRepository:
         rows = cursor.fetchall()
         return [self._row_to_task(row) for row in rows]
 
-    def exists(self, task_id: int) -> bool:
-        cursor = self.conn.cursor()
+    def find_by_status(self, status: str):
+        cursor = self.db.cursor()
 
+        cursor.execute(
+            """
+            SELECT id, description, status, user_id, created_at, updated_at, deleted_at
+            FROM tasks
+            WHERE status = %s AND deleted_at IS NULL
+            """,
+            (status,)
+        )
+
+        rows = cursor.fetchall()
+        cursor.close()
+
+        return [self._row_to_task(row) for row in rows]
+    
+    def exists(self, task_id: int) -> bool:
+        cursor = self.db.cursor()
         cursor.execute("""
         SELECT 1 FROM tasks
         WHERE id = %s AND deleted_at IS NULL
@@ -122,7 +138,7 @@ class TaskRepository:
             description=row["description"],
             status=row["status"],
             user_id=row["user_id"], 
-            created_at=row["createdat"],
-            updated_at=row["updatedat"],
-            deleted_at=row["deletedat"]
+            created_at=row["created_at"],
+            updated_at=row["updated_at"],
+            deleted_at=row["deleted_at"]
         )

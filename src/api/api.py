@@ -1,7 +1,7 @@
 print("🔥🔥🔥 このapi.pyが起動してる")
 from fastapi import FastAPI
-from service.service import CrudService
-from exceptions import TaskNotFoundError, UserNotFoundError, HeaderNotFoundError, AlreadyDeletedError, NotDeletedError, AutorizationError
+from src.service.service import CrudService
+from exceptions import TaskNotFoundError, UserNotFoundError, HeaderNotFoundError, AlreadyDeletedError, NotDeletedError, AuthorizationError
 from src.repository.user_repository import UserRepository
 from src.repository.task_repository import TaskRepository
 from query import TaskQueryService
@@ -84,42 +84,42 @@ def get_user_repo():
     return UserRepository(db)
 
 #API例外ハンドラー
-#@app.exception_handler(TaskNotFoundError)
-    async def task_not_found_handler(request, exc):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Task not found"}
+@app.exception_handler(TaskNotFoundError)
+async def task_not_found_handler(request, exc):
+    return JSONResponse(
+        status_code=404,
+        content={"message": "Task not found"}
+    )
+@app.exception_handler(UserNotFoundError)
+async def user_not_found_handler(request, exc):
+    return JSONResponse(
+        status_code=404,
+        content={"message": str(exc)}
         )
-    @app.exception_handler(UserNotFoundError)
-    async def user_not_found_handler(request, exc):
-        return JSONResponse(
-            status_code=404,
-            content={"message": str(exc)}
-            )
-    @app.exception_handler(HeaderNotFoundError)
-    async def header_not_found_handler(request, exc):
-        return JSONResponse(
-            status_code=401,
-            content={"message": "Header not found"}
-        )
-    @app.exception_handler(AlreadyDeletedError)
-    def handle_deleted(request, exc):
-        return JSONResponse(
-            status_code=409,
-            content={"message": "Task already deleted"}
-        )
-    @app.exception_handler(NotDeletedError)
-    def handle_not_deleted(request, exc):
-        return JSONResponse(
-            status_code=409,
-            content={"message": "Task is not deleted"}
-        )
-    @app.exception_handler(AutorizationError)
-    async def Authorization_handler(request, exc):
-        return JSONResponse(
-            status_code=403, 
-            content={"message": "Not allowed"}
-        )
+@app.exception_handler(HeaderNotFoundError)
+async def header_not_found_handler(request, exc):
+    return JSONResponse(
+        status_code=401,
+        content={"message": "Header not found"}
+    )
+@app.exception_handler(AlreadyDeletedError)
+def handle_deleted(request, exc):
+    return JSONResponse(
+        status_code=409,
+        content={"message": "Task already deleted"}
+    )
+@app.exception_handler(NotDeletedError)
+def handle_not_deleted(request, exc):
+    return JSONResponse(
+        status_code=409,
+        content={"message": "Task is not deleted"}
+    )
+@app.exception_handler(AuthorizationError)
+async def Authorization_handler(request, exc):
+    return JSONResponse(
+        status_code=403, 
+        content={"message": "Not allowed"}
+    )
     #--------------------------------------
 @app.post("/register")
 def register(username: str, password: str, 
@@ -169,6 +169,14 @@ def get_task_with_user_by_id(task_id: int,
                              service: CrudService = Depends(get_service)):
     task = service.get_task_with_user_by_id(task_id, user["id"])
     return TaskWithUserResponse.from_query(task) 
+
+@app.get("/tasks/status/{status}", response_model=list[TaskResponse])
+def list_tasks_by_status(status: str,
+                         user=Depends(get_current_user),
+                         service: CrudService = Depends(get_service)):
+   
+    tasks = service.list_tasks_by_status(status, user["id"])
+    return [TaskResponse.from_domain(t) for t in tasks]
 
 #--------------------------------------
 @app.post("/tasks", status_code=201)
