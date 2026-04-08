@@ -147,10 +147,10 @@ def cmd_restore(service, args):
 
 def format_line(tasks):
         lines = []
-        lines.append(f'{"id":<3} | {"description":<12} | {"status":>7} | {"createdAt":^19} | {"updatedAt":^19}')
+        lines.append(f'{"id":<3} | {"description":<12} | {"status":>7} | {"created_at":^19} | {"updated_at":^19}')
         for task in tasks:
             lines.append(
-                f'{task.id:<3} | {task.description:<12} | {task.status:>7} | {task.createdAt[:19]} | {task.updatedAt[:19]}')
+                f'{task.id:<3} | {task.description:<12} | {task.status:>7} | {task.created_at[:19]} | {task.updated_at[:19]}')
         return "\n".join(lines)  
 
 

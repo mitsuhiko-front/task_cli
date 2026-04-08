@@ -1,6 +1,6 @@
 
 from model import TaskProperty
-from exceptions import TaskNotFoundError, UserNotFoundError, AutorizationError, AlreadyDeletedError, NotDeletedError, AuthenticationError
+from exceptions import TaskNotFoundError, UserNotFoundError, AuthorizationError, AlreadyDeletedError, NotDeletedError, AuthenticationError
 from security import verify_password, hash_password
 from auth import create_access_token
 
@@ -17,9 +17,9 @@ class CrudService():
             description=description,
             status="to-do",
             user_id=user_id,
-            createdAt=None,
-            updatedAt=None,
-            deletedAt=None
+            created_at=None,
+            updated_at=None,
+            deleted_at=None
         )
     
         new_id = self.task_repo.insert(task)
@@ -30,9 +30,9 @@ class CrudService():
         task = self.get_task_or_404(task_id)
 
         if task.user_id != user_id:
-            raise AutorizationError()
+            raise AuthorizationError()
 
-        if task.deletedAt is not None:
+        if task.deleted_at is not None:
             raise AlreadyDeletedError("削除済みです")
         return self.task_repo.delete(task_id)
 
@@ -42,9 +42,9 @@ class CrudService():
             raise TaskNotFoundError()
         
         if task.user_id != user_id:
-            raise AutorizationError()
+            raise AuthorizationError()
         
-        if task.deletedAt is None:
+        if task.deleted_at is None:
             raise NotDeletedError("未削除です")
         
         restored = self.task_repo.restore(task_id)
@@ -56,7 +56,7 @@ class CrudService():
         task = self.get_task_or_404(task_id)
 
         if task.user_id != user_id:
-            raise AutorizationError()
+            raise AuthorizationError()
         task.replace(new_description, new_status)
         
         updated = self.task_repo.update(task)
@@ -69,7 +69,7 @@ class CrudService():
         task = self.get_task_or_404(task_id)
 
         if task.user_id != user_id:
-            raise AutorizationError()
+            raise AuthorizationError()
         changed = task.patch(description, status)
 
         if not changed:     
@@ -92,18 +92,29 @@ class CrudService():
     def get_task_by_id(self, task_id: int, user_id: int):
         task = self.get_task_or_404(task_id)
         if task.user_id != user_id:
-            raise AutorizationError()
+            raise AuthorizationError()
         return task
     def get_task_with_user_by_id(self, task_id: int, user_id: int):
         task_find = self.get_task_or_404(task_id)
         if task_find.user_id != user_id:
-            raise AutorizationError()
+            raise AuthorizationError()
         task = self.query_repo.find_task_with_user_by_id(task_id)
         
         if task is None:
             raise TaskNotFoundError()
 
         return task
+    
+    def list_tasks_by_status(self, status: str, user_id: int):
+        user = self.user_repo.find_by_id(user_id)
+        if user is None:
+            raise AuthorizationError()
+        if user["id"] != user_id:
+            raise AuthorizationError()
+        if status not in ("done", "in-progress", "to-do"):
+            raise ValueError("ステータスが不正です")
+        
+        return self.task_repo.find_by_status(status)
     
     def find_user_by_id(self, user_id: int):
         user = self.user_repo.find_by_id(user_id)

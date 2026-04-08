@@ -1,9 +1,9 @@
 class UserRepository:
     def __init__(self, db):
-        self.conn = db.conn
+        self.db = db
 
     def find_by_id(self, user_id: int):
-        cursor = self.conn.cursor()
+        cursor = self.db.cursor()
 
         cursor.execute(
             "SELECT * FROM users WHERE id = %s",
@@ -18,11 +18,11 @@ class UserRepository:
         return {
             "id": int(row["id"]),
             "username": row["username"],
-            "createdAt": row["createdat"],
-            "updatedAt": row["updatedat"]
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"]
         }
     def find_by_username(self, username: str):
-        cursor = self.conn.cursor()
+        cursor = self.db.cursor()
 
         cursor.execute(
             "SELECT * FROM users WHERE username = %s", 
@@ -38,19 +38,19 @@ class UserRepository:
             "id":row["id"],
             "username":row["username"],
             "password":row["password"],
-            "createdAt": row["createdat"],
-            "updatedAt": row["updatedat"]
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"]
         }
     def insert(self, username: str, password: str):
-        cursor = self.conn.cursor()
+        cursor = self.db.cursor()
 
         cursor.execute(
-            "INSERT INTO users (username, password, createdAt, updatedAt)" \
+            "INSERT INTO users (username, password, created_at, updated_at)" \
             "VALUES (%s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
             , (username, password) 
         )
 
-        self.conn.commit()
+        self.db.conn.commit()
 
         return self.find_by_username(username)
 

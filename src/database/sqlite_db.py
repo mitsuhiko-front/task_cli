@@ -12,8 +12,8 @@ class SQLiteDatabase():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL,
                 password TEXT NOT NULL,
-                createdAt TEXT NOT NULL,
-                updatedAt TEXT NOT NULL
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
             )
         """)
 
@@ -23,9 +23,9 @@ class SQLiteDatabase():
                 description TEXT NOT NULL,
                 status TEXT NOT NULL,
                 user_id INTEGER NOT NULL,
-                createdAt TEXT NOT NULL,
-                updatedAt TEXT NOT NULL,
-                deletedAt TEXT,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                deleted_at TEXT,
                 FOREIGN KEY(user_id) REFERENCES users(id)
             )
         """)
@@ -37,7 +37,7 @@ class SQLiteDatabase():
                 column_name TEXT NOT NULL,
                 before_value TEXT,
                 after_value TEXT,
-                createdAt TEXT NOT NULL,
+                created_at TEXT NOT NULL,
                 FOREIGN KEY(task_id) REFERENCES tasks(id),
                 FOREIGN KEY(user_id) REFERENCES users(id)
             )
@@ -48,9 +48,9 @@ class SQLiteDatabase():
                 task_id INTEGER NOT NULL,
                 user_id INTEGER NOT NULL,
                 body TEXT NOT NULL,
-                createdAt TEXT NOT NULL,
-                updatedAt TEXT NOT NULL,
-                deletedAt TEXT,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                deleted_at TEXT,
                 FOREIGN KEY(task_id) REFERENCES tasks(id),
                 FOREIGN KEY(user_id) REFERENCES users(id)
             )

@@ -14,21 +14,21 @@ def get_db():
 
 class PostgreSQLDatabase:
     def __init__(self, database_url: str):
-        self.conn = psycopg2.connect(
-    database_url,
-    sslmode="require",
-    cursor_factory=RealDictCursor
-)
+        self.conn = psycopg2.connect(database_url)
+        self.conn.autocommit = True
+
+    def cursor(self):
+        return self.conn.cursor(cursor_factory=RealDictCursor)
     def _create_tables(self):
         cursor = self.conn.cursor()
-
+        
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
                 username TEXT NOT NULL,
                 password TEXT NOT NULL,
-                createdAt TIMESTAMP,
-                updatedAt TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
 
@@ -38,9 +38,9 @@ class PostgreSQLDatabase:
                 description TEXT NOT NULL,
                 status TEXT NOT NULL,
                 user_id INTEGER NOT NULL,
-                createdAt TIMESTAMP,
-                updatedAt TIMESTAMP,
-                deletedAt TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                deleted_at TIMESTAMP,
                 FOREIGN KEY(user_id) REFERENCES users(id)
             )
         """)
