@@ -1,10 +1,16 @@
 import sqlite3
 
-class SQLiteDatabase():
+class SQLiteDatabase:
     def __init__(self):
         self.conn = sqlite3.connect("app.db")
         self.conn.row_factory = sqlite3.Row
-    
+
+    def cursor(self):
+        return self.conn.cursor()
+
+    def commit(self):
+        self.conn.commit()
+        
     def _create_tables(self):
         cursor = self.conn.cursor()
         cursor.execute("""

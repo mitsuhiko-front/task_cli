@@ -1,16 +1,10 @@
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from src.database.sqlite_db import SQLiteDatabase
-
 
 def get_db():
     database_url = os.getenv("DATABASE_URL")
-
-    if database_url:
-        return PostgreSQLDatabase(database_url)
-    else:
-        return SQLiteDatabase()
+    return PostgreSQLDatabase(database_url)
 
 class PostgreSQLDatabase:
     def __init__(self, database_url: str):

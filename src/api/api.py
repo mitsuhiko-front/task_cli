@@ -1,10 +1,10 @@
 print("🔥🔥🔥 このapi.pyが起動してる")
 from fastapi import FastAPI
 from src.service.service import CrudService
-from exceptions import TaskNotFoundError, UserNotFoundError, HeaderNotFoundError, AlreadyDeletedError, NotDeletedError, AuthorizationError
+from src.exceptions import TaskNotFoundError, UserNotFoundError, HeaderNotFoundError, AlreadyDeletedError, NotDeletedError, AuthorizationError
 from src.repository.user_repository import UserRepository
 from src.repository.task_repository import TaskRepository
-from repository.query_repository import TaskQueryService
+from src.repository.query_repository import TaskQueryService
 from src.database.postgre_db import get_db
 from datetime import datetime
 from pydantic import BaseModel
@@ -15,10 +15,10 @@ from typing import Optional
 from fastapi.responses import JSONResponse
 from fastapi import Header
 from fastapi.security import HTTPBearer
-from security.security import verify_password
-from security.security import hash_password
-from auth.auth import create_access_token
-from auth.auth import get_current_user
+from src.security.security import verify_password
+from src.security.security import hash_password
+from src.auth.auth import create_access_token
+from src.auth.auth import get_current_user
 
 
 

@@ -1,4 +1,4 @@
-from model.model import TaskProperty
+from src.model.model import TaskProperty
 from psycopg2.extras import RealDictCursor
 
 class TaskRepository:
