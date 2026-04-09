@@ -3,12 +3,12 @@ from src.service.service import CrudService
 from src.repository.task_repository import TaskRepository
 from src.repository.user_repository import UserRepository
 from src.repository.query_repository import TaskQueryService
-from src.database.sqlite_db import SQLiteDatabase
+from src.database.postgre_db import get_db
 from exceptions import TaskNotFoundError
-from auth.auth import decode_token
+from src.auth.auth import decode_token
 
 def get_service():
-    db = SQLiteDatabase()
+    db = get_db()
     db._create_tables()
     task_repo = TaskRepository(db)
     user_repo = UserRepository(db)
