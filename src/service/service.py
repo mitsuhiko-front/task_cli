@@ -1,8 +1,8 @@
 
-from model import TaskProperty
+from model.model import TaskProperty
 from exceptions import TaskNotFoundError, UserNotFoundError, AuthorizationError, AlreadyDeletedError, NotDeletedError, AuthenticationError
-from security import verify_password, hash_password
-from auth import create_access_token
+from security.security import verify_password, hash_password
+from auth.auth import create_access_token
 
 
 class CrudService():

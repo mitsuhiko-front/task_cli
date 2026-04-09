@@ -1,10 +1,10 @@
 import sys
 from src.service.service import CrudService
-from repository import TaskRepository, UserRepository 
-from query import TaskQueryService
+from repository_sqlite import TaskRepository, UserRepository 
+from repository.query_repository import TaskQueryService
 from src.database.sqlite_db import SQLiteDatabase
 from exceptions import TaskNotFoundError
-from auth import decode_token
+from auth.auth import decode_token
 
 def get_service():
     db = SQLiteDatabase()

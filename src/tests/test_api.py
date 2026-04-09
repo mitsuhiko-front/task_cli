@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from api.api import app
-from auth import get_user_repo
+from auth.auth import get_user_repo
 
 
 class FakeUserRepo:

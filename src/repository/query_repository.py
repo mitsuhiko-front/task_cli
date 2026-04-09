@@ -1,10 +1,10 @@
 
 class TaskQueryService:
     def __init__(self, db):
-        self.conn = db.conn
+        self.db = db
 
     def find_task_with_user_by_id(self, task_id: int):
-        cursor = self.conn.cursor()
+        cursor = self.db.cursor()
 
         cursor.execute("""
         SELECT tasks.id, tasks.description, tasks.status, users.username
@@ -26,7 +26,7 @@ class TaskQueryService:
         }
 
     def find_all_with_user(self, user_id):
-        cursor = self.conn.cursor()
+        cursor = self.db.cursor()
 
         cursor.execute("""
         SELECT tasks.id, tasks.description, tasks.status, users.username
