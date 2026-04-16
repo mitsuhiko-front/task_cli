@@ -1,12 +1,16 @@
 import sys
+from rich import print
+from rich.table import Table
+from rich.console import Console
 from src.service.service import CrudService
 from src.repository.task_repository import TaskRepository
 from src.repository.user_repository import UserRepository
 from src.repository.query_repository import TaskQueryService
 from src.database.postgre_db import get_db
-from exceptions import TaskNotFoundError
+from src.exceptions import TaskNotFoundError
 from src.auth.auth import decode_token
 
+print("[bold green]Hello[/bold green]")
 def get_service():
     db = get_db()
     db._create_tables()
@@ -20,6 +24,18 @@ def get_user_id():
     return decode_token(token)
 
 def print_task(task):
+    table = Table(title="Expense Summary")
+    table.add_column("ID", justify="right", style="cyan", no_wrap=True)
+    table.add_column("Description", style="green")
+    table.add_column("Status", justify="right", style="red")
+
+    table.add_row(
+            str(task.id), 
+            task.description,
+            task.status,
+            )
+    console = Console()
+    console.print(table)
     print(f"[{task.id}] {task.description} ({task.status})")
 
 def print_task_with_user(task):
