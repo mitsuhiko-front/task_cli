@@ -1,11 +1,14 @@
 print("🔥🔥🔥 このapi.pyが起動してる")
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
+import logging
 from src.service.service import CrudService
 from src.exceptions import TaskNotFoundError, UserNotFoundError, HeaderNotFoundError, AlreadyDeletedError, NotDeletedError, AuthorizationError
 from src.repository.user_repository import UserRepository
 from src.repository.task_repository import TaskRepository
 from src.repository.query_repository import TaskQueryService
 from src.database.postgre_db import get_db
+from src.database.postgre_db import create_db
 from datetime import datetime
 from pydantic import BaseModel
 from fastapi import HTTPException
@@ -64,23 +67,26 @@ class TaskPatch(BaseModel):
     description: Optional[str] = None
     status: Optional[Literal["to-do", "in-progress", "done"]] = None
 
-app = FastAPI()
 
-@app.on_event("startup")
-def startup():
-    db = get_db()
-    print("🔥 DB TYPE:", type(db))
-    db._create_tables()
+logger = logging.getLogger(__name__)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db = create_db()
+    try:
+        db.create_tables()
+        logger.info("database tables created")
+        yield
+    finally:
+        db.close()
+        logger.info("database connection closed")
+app = FastAPI(lifespan=lifespan)
+
+def get_service(db=Depends(get_db)):
     
-def get_service():
-    db = get_db()
-    task_repo = TaskRepository(db)
-    user_repo = UserRepository(db)
-    query_repo = TaskQueryService(db)
-    return CrudService(task_repo, user_repo, query_repo)
+    return CrudService(TaskRepository(db), UserRepository(db), TaskQueryService(db))
 
-def get_user_repo():
-    db = get_db()
+def get_user_repo(db=Depends(get_db)):
+    
     return UserRepository(db)
 
 #API例外ハンドラー
@@ -184,7 +190,7 @@ def create_task(task: TaskCreate,
                 user=Depends(get_current_user), 
                 service: CrudService = Depends(get_service)):
     created = service.add(task.description, user["id"])
-    return created
+    return TaskResponse.from_domain(created)
 
 @app.delete("/tasks/{task_id}", status_code=204)
 def delete_task(task_id: int, 
