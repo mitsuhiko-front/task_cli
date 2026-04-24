@@ -67,7 +67,10 @@ class TaskPatch(BaseModel):
     description: Optional[str] = None
     status: Optional[Literal["to-do", "in-progress", "done"]] = None
 
-
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+    
 logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -128,22 +131,21 @@ async def Authorization_handler(request, exc):
     )
     #--------------------------------------
 @app.post("/register")
-def register(username: str, password: str, 
+def register(body: LoginRequest, 
             user_repo: UserRepository = Depends(get_user_repo)):
-    hashed = hash_password(password)
+    hashed = hash_password(body.password)
 
-    user_repo.insert(username, hashed)
-    print("🔥 REGISTER CALLED")
+    user_repo.insert(body.username, hashed)
     return {"msg": "ok"}
 #--------------------------------------
 #ログインルーター
 @app.post("/login")
-def login(username: str, password: str, 
+def login(body: LoginRequest, 
           user_repo: UserRepository = Depends(get_user_repo)):
-    user = user_repo.find_by_username(username)
+    user = user_repo.find_by_username(body.username)
     if user is None:
         raise HTTPException(status_code=401)
-    if not verify_password(password, user["password"]):
+    if not verify_password(body.password, user["password"]):
         raise HTTPException(status_code=401)
     token = create_access_token(user["id"])
     return {"access_token": token}
@@ -197,14 +199,14 @@ def delete_task(task_id: int,
                 user = Depends(get_current_user),
                 service: CrudService = Depends(get_service)):
     service.delete(task_id, user["id"])
-    return {"msg": "削除しました"}
+    return 
 
 @app.post("/tasks/{task_id}/restore", status_code=200)
 def restore_task(task_id: int, 
                  user = Depends(get_current_user),
                  service: CrudService = Depends(get_service)):
-    service.restore(task_id, user["id"])
-    return {"msg": "復元しました"}
+    restored = service.restore(task_id, user["id"])
+    return TaskResponse.from_domain(restored)
 
 @app.put("/tasks/{task_id}", response_model=TaskResponse)
 def put_task(task_id: int, 
