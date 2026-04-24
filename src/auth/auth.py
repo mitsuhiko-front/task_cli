@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from fastapi.security import HTTPBearer
 from src.repository.user_repository import UserRepository
 from src.database.postgre_db import get_db
+from src.database.postgre_db import create_db
 from fastapi import Depends
 
 #自動でBearer付ける
@@ -27,8 +28,7 @@ def decode_token(token: str):
     return int(payload["sub"])
 
 def get_user_repo():
-    db = get_db()
-    db._create_tables()
+    db = create_db()
     return UserRepository(db)
 
 def get_current_user(
