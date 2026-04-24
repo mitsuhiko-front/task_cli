@@ -67,10 +67,15 @@ class TaskPatch(BaseModel):
     description: Optional[str] = None
     status: Optional[Literal["to-do", "in-progress", "done"]] = None
 
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+
 class LoginRequest(BaseModel):
     username: str
     password: str
-    
+
+
 logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -131,7 +136,7 @@ async def Authorization_handler(request, exc):
     )
     #--------------------------------------
 @app.post("/register")
-def register(body: LoginRequest, 
+def register(body: RegisterRequest, 
             user_repo: UserRepository = Depends(get_user_repo)):
     hashed = hash_password(body.password)
 

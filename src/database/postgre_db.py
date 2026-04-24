@@ -1,7 +1,9 @@
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from dotenv import load_dotenv  
 
+load_dotenv()
 def create_db():
     return PostgreSQLDatabase(os.getenv("DATABASE_URL"))
 
@@ -19,7 +21,9 @@ class PostgreSQLDatabase:
         self.conn = psycopg2.connect(database_url)
         self.conn.autocommit = True
 
-
+    def close(self):
+        self.conn.close()
+        
     def cursor(self):
         return self.conn.cursor(cursor_factory=RealDictCursor)
     def create_tables(self):
