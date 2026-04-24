@@ -50,7 +50,7 @@ class CrudService():
         restored = self.task_repo.restore(task_id)
         if not restored:
             raise TaskNotFoundError()
-        return True
+        return self.task_repo.find_by_id(task_id)
         
     def update(self, task_id: int, new_description: str, new_status: str, user_id: int):
         task = self.get_task_or_404(task_id)
