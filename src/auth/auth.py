@@ -1,7 +1,7 @@
 from fastapi.security import HTTPAuthorizationCredentials
 from jose import jwt
 from jose import JWTError
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 from fastapi import HTTPException
 from fastapi.security import HTTPBearer
 from src.repository.user_repository import UserRepository
@@ -18,7 +18,7 @@ ALGORITHM = "HS256"
 def create_access_token(user_id: int):
     payload = {
         "sub": str(user_id),
-        "exp": datetime.utcnow() + timedelta(hours=1)
+        "exp": datetime.now(timezone.utc)
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
